@@ -8,9 +8,13 @@ import random
 import time
 import sys
 import select
-import tty
-import termios
 from typing import Dict, List
+
+if sys.platform == 'win32':
+    import msvcrt
+else:
+    import tty
+    import termios
 
 # --------------------------- Utility functions ---------------------------
 
@@ -36,28 +40,25 @@ def color_text(text: str, color: str) -> str:
 # Non-blocking keyboard helpers
 class RawInput:
     def __enter__(self):
-        if os.name != 'nt':
+        if sys.platform != 'win32':
             self.fd = sys.stdin.fileno()
             self.old_settings = termios.tcgetattr(self.fd)
             tty.setcbreak(self.fd)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if os.name != 'nt':
+        if sys.platform != 'win32':
             termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
 
 def key_pressed():
-    if os.name == 'nt':
-        import msvcrt
+    if sys.platform == 'win32':
         return msvcrt.kbhit()
     dr, _, _ = select.select([sys.stdin], [], [], 0)
     return dr != []
 
 def read_key():
-    if os.name == 'nt':
-        import msvcrt
-        ch = msvcrt.getwch()
-        return ch
+    if sys.platform == 'win32':
+        return msvcrt.getch().decode('utf-8')
     return sys.stdin.read(1)
 
 # --------------------------- Fish data ---------------------------
