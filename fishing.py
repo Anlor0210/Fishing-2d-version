@@ -38,6 +38,15 @@ COLORS = {
 def color_text(text: str, color: str) -> str:
     return f"{COLORS.get(color, COLORS['White'])}{text}{COLORS['Reset']}"
 
+# Season helpers
+SEASONS = ["Spring", "Summer", "Autumn", "Winter"]
+SEASON_EMOJI = {
+    "Spring": "🌸",
+    "Summer": "☀️",
+    "Autumn": "🍂",
+    "Winter": "❄️",
+}
+
 # Non-blocking keyboard helpers
 class RawInput:
     def __enter__(self):
@@ -65,17 +74,17 @@ def read_key():
 # --------------------------- Fish data ---------------------------
 
 FISH_LAKE = [
-    {"name": "Carp", "rarity": "Common", "price": 1, "xp": 5},
+    {"name": "Carp", "rarity": "Common", "price": 1, "xp": 5, "seasons": ["Spring", "Summer"]},
     {"name": "Tilapia", "rarity": "Common", "price": 1.25, "xp": 5},
     {"name": "Grass carp", "rarity": "Uncommon", "price": 5, "xp": 7},
-    {"name": "Catfish", "rarity": "Rare", "price": 10, "xp": 10},
+    {"name": "Catfish", "rarity": "Rare", "price": 10, "xp": 10, "time_of_day": ["Night"]},
     {"name": "Snakehead fish", "rarity": "Legendary", "price": 50, "xp": 50},
-    {"name": "Bluegill", "rarity": "Common", "price": 3, "xp": 5},
+    {"name": "Bluegill", "rarity": "Common", "price": 3, "xp": 5, "time_of_day": ["Day"]},
     {"name": "Northern Pike", "rarity": "Uncommon", "price": 12, "xp": 15},
     {"name": "Largemouth Bass", "rarity": "Common", "price": 8, "xp": 10},
-    {"name": "Rainbow Trout", "rarity": "Uncommon", "price": 15, "xp": 12},
-    {"name": "Yellow Perch", "rarity": "Common", "price": 5, "xp": 7},
-    {"name": "Muskellunge", "rarity": "Legendary", "price": 40, "xp": 35},
+    {"name": "Rainbow Trout", "rarity": "Uncommon", "price": 15, "xp": 12, "time_of_day": ["Day"]},
+    {"name": "Yellow Perch", "rarity": "Common", "price": 5, "xp": 7, "seasons": ["Autumn", "Winter"]},
+    {"name": "Muskellunge", "rarity": "Legendary", "price": 40, "xp": 35, "seasons": ["Summer"]},
     {"name": "Walleye", "rarity": "Common", "price": 7, "xp": 9},
     {"name": "Lake Sturgeon", "rarity": "Rare", "price": 20, "xp": 25},
     {"name": "White Bass", "rarity": "Uncommon", "price": 6, "xp": 8},
@@ -375,6 +384,7 @@ class Game:
         self.has_ancient_sea_access = False
         self.has_ancient_key = False
         self.current_hour = 0
+        self.current_day = 0
         self.event = "Nothing"
         self.level = 0
         self.xp = 0
@@ -397,13 +407,14 @@ class Game:
             'hasBoat': self.has_boat,
             'hasTorch': self.has_torch,
             'hasAbyssTrenchAccess': self.has_abyss_trench_access,
-            'hasAncientSeaAccess': self.has_ancient_sea_access,
-            'hasAncientKey': self.has_ancient_key,
-            'currentHour': self.current_hour,
-            'event': self.event,
-            'level': self.level,
-            'xp': self.xp,
-            'discovery': self.discovery,
+              'hasAncientSeaAccess': self.has_ancient_sea_access,
+              'hasAncientKey': self.has_ancient_key,
+              'currentHour': self.current_hour,
+              'currentDay': self.current_day,
+              'event': self.event,
+              'level': self.level,
+              'xp': self.xp,
+              'discovery': self.discovery,
             'quests': self.quest_system.active_quests,
         }
         data_to_hash = data.copy()
@@ -431,6 +442,7 @@ class Game:
             self.has_ancient_sea_access = data.get('hasAncientSeaAccess', False)
             self.has_ancient_key = data.get('hasAncientKey', False)
             self.current_hour = data.get('currentHour', 0)
+            self.current_day = data.get('currentDay', 0)
             self.event = data.get('event', 'Nothing')
             self.level = data.get('level', 0)
             self.xp = data.get('xp', 0)
@@ -543,8 +555,21 @@ class Game:
 
     # -------------- Fish generation --------------
     def get_fish_by_weighted_random(self, fish_list: List[Dict]) -> Dict:
-        weighted = []
+        time_of_day = self.get_time_of_day()
+        season = self.get_current_season()
+        filtered: List[Dict] = []
         for fish in fish_list:
+            allowed_times = fish.get('time_of_day')
+            allowed_seasons = fish.get('seasons')
+            if allowed_times and time_of_day not in allowed_times:
+                continue
+            if allowed_seasons and season not in allowed_seasons:
+                continue
+            filtered.append(fish)
+        if not filtered:
+            filtered = fish_list
+        weighted = []
+        for fish in filtered:
             rarity = fish.get('rarity', 'Common')
             weight = {
                 'Common': 5,
@@ -686,11 +711,24 @@ class Game:
             self.current_zone = "Lake"
             self.current_fish_list = FISH_LAKE
             self.current_zone_catch_length = 5
-        time.sleep(2)
+            time.sleep(2)
 
     # -------------- Time & Events --------------
+    def get_time_of_day(self) -> str:
+        if 6 <= self.current_hour < 18:
+            return "Day"
+        if 18 <= self.current_hour < 22:
+            return "Sunset"
+        return "Night"
+
+    def get_current_season(self) -> str:
+        return SEASONS[(self.current_day // 7) % 4]
+
     def advance_time(self):
+        prev_hour = self.current_hour
         self.current_hour = (self.current_hour + 1) % 24
+        if self.current_hour == 0 and prev_hour == 23:
+            self.current_day += 1
         if self.current_hour < 20:
             self.event = "Nothing"
         elif self.current_hour >= 20:
@@ -711,7 +749,11 @@ class Game:
         print("_____MENU_____")
         print(f"Level: {self.level} ({xp_percent}%)")
         print(f"Balance: {round(self.balance, 2)}$")
-        print(f"Time: {self.current_hour}:00")
+        time_of_day = self.get_time_of_day()
+        season = self.get_current_season()
+        emoji = SEASON_EMOJI.get(season, "")
+        print(f"Time: {self.current_hour:02d}:00 ({time_of_day})")
+        print(f"Day: {self.current_day} | Season: {season} {emoji}")
         print(f"Event: {self.event}")
         print("Version: Beta")
         print("1. Fishing")
