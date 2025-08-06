@@ -8,6 +8,7 @@ import random
 import time
 import sys
 import select
+import hashlib
 from typing import Dict, List
 
 if sys.platform == 'win32':
@@ -405,6 +406,9 @@ class Game:
             'discovery': self.discovery,
             'quests': self.quest_system.active_quests,
         }
+        data_to_hash = data.copy()
+        serialized = json.dumps(data_to_hash, sort_keys=True)
+        data['hash'] = hashlib.sha256(serialized.encode('utf-8')).hexdigest()
         with open(self.save_file, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
 
@@ -412,6 +416,12 @@ class Game:
         if os.path.exists(self.save_file):
             with open(self.save_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+            saved_hash = data.pop('hash', '')
+            serialized = json.dumps(data, sort_keys=True)
+            computed_hash = hashlib.sha256(serialized.encode('utf-8')).hexdigest()
+            if saved_hash != computed_hash:
+                print("⚠️ Save file has been tampered with!")
+                exit()
             self.balance = data.get('balance', 100)
             self.inventory = data.get('inventoryFish', [])
             self.has_submarine = data.get('hasSubmarine', False)
