@@ -130,25 +130,46 @@ FISH_ABYSS_TRENCH = [
     {"name": "Abyssal Squid", "rarity": "Rare", "price": 70, "xp": 80},
     {"name": "Giant Anglerfish", "rarity": "Legendary", "price": 100, "xp": 130},
     {"name": "Benthic Eel", "rarity": "Uncommon", "price": 30, "xp": 40},
+    {"name": "Abyssal Leviathan", "rarity": "Legendary", "price": 200, "xp": 350},
+    {"name": "Trench Dragonfish", "rarity": "Rare", "price": 80, "xp": 120},
+    {"name": "Bioluminescent Squid", "rarity": "Rare", "price": 50, "xp": 75},
+    {"name": "Ghost Shark", "rarity": "Legendary", "price": 150, "xp": 200},
+    {"name": "Colossal Squid", "rarity": "Mythical", "price": 250, "xp": 400},
+    {"name": "Abyssal Angler", "rarity": "Legendary", "price": 175, "xp": 250},
+    {"name": "Barreleye Fish", "rarity": "Rare", "price": 40, "xp": 55},
+    {"name": "Abyssal Cusk Eel", "rarity": "Common", "price": 20, "xp": 30},
+    {"name": "Abyssal Lanternfish", "rarity": "Uncommon", "price": 25, "xp": 40},
+    {"name": "Giant Fangtooth", "rarity": "Legendary", "price": 100, "xp": 150},
 ]
 
 FISH_ANCIENT_SEA = [
-    {"name": "Mosasaurus", "rarity": "Legendary", "price": 350, "xp": 450},
-    {"name": "Dunkleosteus", "rarity": "Legendary", "price": 400, "xp": 500},
-    {"name": "Megalodon", "rarity": "Mythical", "price": 500, "xp": 700},
+    {"name": "Mosasaurus", "rarity": "Legendary", "price": 350, "xp": 500},
+    {"name": "Dunkleosteus", "rarity": "Mythical", "price": 500, "xp": 700},
+    {"name": "Megalodon", "rarity": "Mythical", "price": 1000, "xp": 1500},
     {"name": "Leedsichthys", "rarity": "Exotic", "price": 250, "xp": 300},
-    {"name": "Pliosaurus", "rarity": "Legendary", "price": 150, "xp": 200},
-    {"name": "Ichthyosaurus", "rarity": "Legendary", "price": 200, "xp": 250},
-    {"name": "Acanthodes", "rarity": "Exotic", "price": 300, "xp": 350},
     {"name": "Shonisaurus", "rarity": "Legendary", "price": 300, "xp": 400},
+    {"name": "Ichthyosaurus", "rarity": "Legendary", "price": 200, "xp": 250},
     {"name": "Tylosaurus", "rarity": "Legendary", "price": 250, "xp": 300},
+    {"name": "Pliosaurus", "rarity": "Legendary", "price": 350, "xp": 500},
     {"name": "Tyrannosaurus Rex", "rarity": "Mythical", "price": 600, "xp": 800},
+    {"name": "Sharksaurus", "rarity": "Legendary", "price": 450, "xp": 600},
+    {"name": "Acanthodes", "rarity": "Exotic", "price": 300, "xp": 350},
 ]
 
 FISH_MYSTIC_SPRING = [
     {"name": "Prism Trout", "rarity": "Rare", "price": 15, "xp": 10},
     {"name": "Spirit Koi", "rarity": "Epic", "price": 25, "xp": 25},
     {"name": "Phoenix Scale Carp", "rarity": "Mythical", "price": 50, "xp": 40},
+    {"name": "Moonlit Koi", "rarity": "Mythical", "price": 100, "xp": 150},
+    {"name": "Water Sprite", "rarity": "Epic", "price": 75, "xp": 100},
+    {"name": "Crystal Trout", "rarity": "Legendary", "price": 120, "xp": 200},
+    {"name": "Spirit Nymph", "rarity": "Epic", "price": 90, "xp": 120},
+    {"name": "Water Dragonfish", "rarity": "Rare", "price": 45, "xp": 60},
+    {"name": "Moonbeam Bass", "rarity": "Rare", "price": 40, "xp": 50},
+    {"name": "Mystic Swallower", "rarity": "Legendary", "price": 150, "xp": 250},
+    {"name": "Luminous Catfish", "rarity": "Uncommon", "price": 25, "xp": 35},
+    {"name": "Frostfin Koi", "rarity": "Rare", "price": 50, "xp": 70},
+    {"name": "Glimmering Angelfish", "rarity": "Epic", "price": 60, "xp": 80},
 ]
 
 EXOTIC_FISH_FULL_MOON = [
