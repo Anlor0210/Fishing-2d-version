@@ -69,6 +69,16 @@ FISH_LAKE = [
     {"name": "Grass carp", "rarity": "Uncommon", "price": 5, "xp": 7},
     {"name": "Catfish", "rarity": "Rare", "price": 10, "xp": 10},
     {"name": "Snakehead fish", "rarity": "Legendary", "price": 50, "xp": 50},
+    {"name": "Bluegill", "rarity": "Common", "price": 3, "xp": 5},
+    {"name": "Northern Pike", "rarity": "Uncommon", "price": 12, "xp": 15},
+    {"name": "Largemouth Bass", "rarity": "Common", "price": 8, "xp": 10},
+    {"name": "Rainbow Trout", "rarity": "Uncommon", "price": 15, "xp": 12},
+    {"name": "Yellow Perch", "rarity": "Common", "price": 5, "xp": 7},
+    {"name": "Muskellunge", "rarity": "Legendary", "price": 40, "xp": 35},
+    {"name": "Walleye", "rarity": "Common", "price": 7, "xp": 9},
+    {"name": "Lake Sturgeon", "rarity": "Rare", "price": 20, "xp": 25},
+    {"name": "White Bass", "rarity": "Uncommon", "price": 6, "xp": 8},
+    {"name": "Channel Catfish", "rarity": "Rare", "price": 18, "xp": 20},
 ]
 
 FISH_SEA = [
@@ -82,28 +92,57 @@ FISH_SEA = [
     {"name": "Lionfish", "rarity": "Epic", "base_price": 35, "xp": 100},
     {"name": "Giant Blue Marlin", "rarity": "Legendary", "base_price": 55, "xp": 1000},
     {"name": "Sunfish", "rarity": "Mythical", "base_price": 70, "xp": 1000},
+    {"name": "Dolphin", "rarity": "Uncommon", "base_price": 15, "xp": 20},
+    {"name": "Barracuda", "rarity": "Rare", "base_price": 30, "xp": 40},
+    {"name": "Clownfish", "rarity": "Common", "base_price": 6, "xp": 8},
+    {"name": "Mahi-Mahi", "rarity": "Rare", "base_price": 25, "xp": 30},
+    {"name": "Blue Marlin", "rarity": "Legendary", "base_price": 90, "xp": 100},
+    {"name": "Kingfish", "rarity": "Uncommon", "base_price": 18, "xp": 22},
+    {"name": "Emperor Angelfish", "rarity": "Rare", "base_price": 35, "xp": 45},
+    {"name": "Grouper", "rarity": "Uncommon", "base_price": 12, "xp": 16},
+    {"name": "Triggerfish", "rarity": "Rare", "base_price": 20, "xp": 25},
+    {"name": "Napoleon Wrasse", "rarity": "Legendary", "base_price": 60, "xp": 80},
 ]
 
 FISH_BATHYAL = [
-    {"name": "Deep-sea dragonfish", "rarity": "Rare", "base_price": 5, "xp": 10},
-    {"name": "Lanternfish", "rarity": "Rare", "base_price": 10, "xp": 10},
-    {"name": "Anglerfish", "rarity": "Uncommon", "base_price": 13, "xp": 7},
-    {"name": "Black swallower", "rarity": "Legendary", "base_price": 15, "xp": 50},
-    {"name": "Goblin shark", "rarity": "Legendary", "base_price": 20, "xp": 50},
+    {"name": "Deep-sea Dragonfish", "rarity": "Rare", "base_price": 35, "xp": 45},
+    {"name": "Lanternfish", "rarity": "Uncommon", "base_price": 15, "xp": 18},
+    {"name": "Anglerfish", "rarity": "Uncommon", "base_price": 20, "xp": 25},
+    {"name": "Black Swallower", "rarity": "Legendary", "base_price": 90, "xp": 120},
+    {"name": "Goblin Shark", "rarity": "Legendary", "base_price": 50, "xp": 70},
+    {"name": "Cusk Eel", "rarity": "Rare", "base_price": 25, "xp": 30},
+    {"name": "Viperfish", "rarity": "Rare", "base_price": 30, "xp": 40},
+    {"name": "Giant Squid", "rarity": "Legendary", "base_price": 80, "xp": 100},
+    {"name": "Brilliant Lanternfish", "rarity": "Rare", "base_price": 18, "xp": 22},
+    {"name": "Swallowtail", "rarity": "Uncommon", "base_price": 12, "xp": 15},
 ]
 
 FISH_ABYSS_TRENCH = [
     {"name": "Lanternfish", "rarity": "Common", "price": 15},
-    {"name": "Angler Leviathan", "rarity": "Rare", "price": 25},
-    {"name": "Giant Squid", "rarity": "Legendary", "price": 75},
+    {"name": "Angler Leviathan", "rarity": "Legendary", "price": 100, "xp": 150},
+    {"name": "Giant Squid", "rarity": "Legendary", "price": 75, "xp": 100},
     {"name": "Ancient Key", "rarity": "Legendary", "price": 25},
+    {"name": "Abyssal Octopus", "rarity": "Rare", "price": 50, "xp": 60},
+    {"name": "Cusk Eel", "rarity": "Rare", "price": 40, "xp": 50},
+    {"name": "Black Swallower", "rarity": "Legendary", "price": 80, "xp": 120},
+    {"name": "Abyssal Dragonfish", "rarity": "Rare", "price": 60, "xp": 70},
+    {"name": "Swallower Eel", "rarity": "Rare", "price": 50, "xp": 60},
+    {"name": "Abyssal Squid", "rarity": "Rare", "price": 70, "xp": 80},
+    {"name": "Giant Anglerfish", "rarity": "Legendary", "price": 100, "xp": 130},
+    {"name": "Benthic Eel", "rarity": "Uncommon", "price": 30, "xp": 40},
 ]
 
 FISH_ANCIENT_SEA = [
-    {"name": "Mosasaurus", "rarity": "Legendary", "price": 75},
-    {"name": "Dunkleost", "rarity": "Legendary", "price": 75},
-    {"name": "Megalodon", "rarity": "Legendary", "price": 100},
-    {"name": "Leedsichthys", "rarity": "Exotic", "price": 250},
+    {"name": "Mosasaurus", "rarity": "Legendary", "price": 350, "xp": 450},
+    {"name": "Dunkleosteus", "rarity": "Legendary", "price": 400, "xp": 500},
+    {"name": "Megalodon", "rarity": "Mythical", "price": 500, "xp": 700},
+    {"name": "Leedsichthys", "rarity": "Exotic", "price": 250, "xp": 300},
+    {"name": "Pliosaurus", "rarity": "Legendary", "price": 150, "xp": 200},
+    {"name": "Ichthyosaurus", "rarity": "Legendary", "price": 200, "xp": 250},
+    {"name": "Acanthodes", "rarity": "Exotic", "price": 300, "xp": 350},
+    {"name": "Shonisaurus", "rarity": "Legendary", "price": 300, "xp": 400},
+    {"name": "Tylosaurus", "rarity": "Legendary", "price": 250, "xp": 300},
+    {"name": "Tyrannosaurus Rex", "rarity": "Mythical", "price": 600, "xp": 800},
 ]
 
 FISH_MYSTIC_SPRING = [
@@ -507,15 +546,15 @@ class Game:
             return random.randint(300, 800)
         if name == "Sunfish":
             return random.randint(500, 1500)
-        if name == "Deep-sea dragonfish":
+        if name == "Deep-sea Dragonfish":
             return random.randint(5, 20)
         if name == "Lanternfish":
             return random.randint(5, 15)
         if name == "Anglerfish":
             return random.randint(10, 25)
-        if name == "Black swallower":
+        if name == "Black Swallower":
             return random.randint(2, 10)
-        if name == "Goblin shark":
+        if name == "Goblin Shark":
             return random.randint(50, 100)
         if name == "Angler Leviathan":
             return random.randint(15, 100)
@@ -523,7 +562,7 @@ class Game:
             return random.randint(1000, 5000)
         if name == "Ancient Key":
             return random.randint(100, 500)
-        if name == "Mosasaurus" or name == "Dunkleost":
+        if name == "Mosasaurus" or name == "Dunkleosteus":
             return random.randint(1000, 3000)
         if name == "Megalodon":
             return random.randint(10000, 50000)
