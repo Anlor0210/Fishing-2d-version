@@ -71,6 +71,8 @@ def read_key():
         return msvcrt.getch().decode('utf-8')
     return sys.stdin.read(1)
 
+ENTER_KEYS = ('\r', '\n', '\r\n', '\x0d')
+
 # --------------------------- Fish data ---------------------------
 
 FISH_LAKE = [
@@ -830,7 +832,7 @@ class Game:
                 time.sleep(speed)
                 if key_pressed():
                     ch = read_key()
-                    if ch in ('\n', '\r', ' '):
+                    if ch in ENTER_KEYS or ch == ' ':
                         if target_start <= i <= target_end:
                             if random.randint(1, 100) <= 20:
                                 print("\n>> Oh no! The fish run!")
