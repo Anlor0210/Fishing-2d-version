@@ -2,7 +2,7 @@
 👋 1. Welcome
 Welcome to Fishing Game, a simple yet addictive console-based fishing simulator powered by PowerShell or Python!
 
-If you don't have Python download here: https://www.python.org/downloads
+If you don't have Python, download it here: https://www.python.org/downloads
 
 No fancy graphics. Just you, the water, and a whole lot of fish!
 
@@ -13,7 +13,7 @@ Unzip the .zip file to any folder on your computer.
 🚀 Step 2: Start the game
 Double-click on the fishing.py file.
 
-Game will open in a PowerShell window (or CMD if preferred).
+The game will open in a PowerShell window (or CMD if preferred).
 
 ✅ Requires Python installed (e.g., Python 3.11+)
 
@@ -21,7 +21,7 @@ Game will open in a PowerShell window (or CMD if preferred).
 🎣 Step-by-step:
 From the Main Menu, select 1. Start Fishing
 
-Wait until the pointer is inside the Catch Zone
+Wait until the pointer is inside the Catch Zone.
 
 Press Enter to catch the fish!
 
@@ -49,7 +49,7 @@ You can unlock and travel to many fishing zones, such as:
 
 Lake, Mystic Spring, Deep Sea, Frozen Bay, Abyss Trench...
 
-Each zone has its own fish species and unique quests!
+Each zone has its unique fish species and quests!
 
 📘 6. Quest System (Menu 7)
 📋 Types of Quests
@@ -61,7 +61,7 @@ Catch a specific fish
 
 e.g., "Catch 5 Snakefish"
 
-Catch fish by rarity
+Catch fish by rarity.
 
 e.g., "Catch 3 Uncommon fish"
 
@@ -91,22 +91,22 @@ ___ Quest 01 ___
 💡 Completing a quest will reward coins and replace it with a new one immediately.
 
 🎒 7. Inventory (Menu 4)
-Check the fish you've caught, their rarity and weight.
+Check the fish you've caught, their rarity, and weight.
 Use the Sell command to sell:
 
-A specific fish (e.g., sell Snakefish)
+A specific fish (e.g., the Snakefish)
 
 Or all fish (sell all)
 
 🛒 8. Shop (Menu 5)
-Spend money to:
+Spend money on:
 
 Unlock new zones
 
-Buy equipment or upgrades
+Buy equipment or upgrades.
 
 📔 9. Discovery Log (Menu 6)
-Track all the fish species you've ever caught. Each zone maintains its own record.
+Track all the fish species you've ever caught. Each zone maintains its record.
 
 💾 10. Auto-Save
 Game auto-saves after:
@@ -117,11 +117,12 @@ Completing quests
 
 Buying items
 
-You can safely exit and return anytime!
+You can safely exit and return at any time!
 
 🙏 11. Thank You!
-Thanks for playing Fishing Game!
+Thanks for playing the Fishing Game!
 Stay relaxed, chase rare fish, and have fun with our evolving quest system.
 
-If you enjoy the game, feel free to share with your friends!
+If you enjoy the game, feel free to share it with your friends!
 **Contact: An1002@gmail.com**
+The game will be updated every week!
