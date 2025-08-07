@@ -10,6 +10,7 @@ import sys
 import select
 import hashlib
 from typing import Dict, List
+from dataclasses import dataclass, asdict
 try:
     import curses
 except Exception:  # pragma: no cover - curses may be missing on some platforms
@@ -210,169 +211,76 @@ SHOP_ITEMS = [
     {"name": "Submarine Upgrade 02", "price": 100000000, "description": "Access Ancient Sea zone"},
 ]
 
-# Base reward for quests depending on fish rarity
-RARITY_REWARD = {
-    "Common": 100,
-    "Uncommon": 200,
-    "Rare": 3000,
-    "Epic": 5000,
-    "Legendary": 10000,
-    "Mythical": 15000,
-    "Exotic": 50000,
-}
+@dataclass
+class Quest:
+    """Represents a quest tied to a specific zone."""
+
+    quest_type: int  # 1: specific fish, 2: rarity
+    zone: str
+    target_fish: str | None = None
+    rarity: str | None = None
+    amount: int = 1
+    progress: int = 0
+
+    def to_dict(self) -> Dict:
+        return asdict(self)
 
 
-class QuestSystem:
-    """Handles dynamic quest generation and completion."""
+class QuestManager:
+    """Manages quests for all zones."""
 
-    def __init__(self, game, quests=None):
-        self.game = game
-        self.active_quests = quests or []
-        self.max_quests = 20
-        while len(self.active_quests) < self.max_quests:
-            self.active_quests.append(self.generate_quest())
+    def __init__(self, quests_data: Dict[str, List[Dict]] | None = None):
+        self.zone_quests: Dict[str, List[Quest]] = {}
+        if quests_data:
+            for zone, quests in quests_data.items():
+                self.zone_quests[zone] = [Quest(**q) for q in quests]
+        else:
+            self.zone_quests = {
+                "Lake": [Quest(1, "Lake", target_fish="Snakefish", amount=5)],
+                "Mystic Spring": [
+                    Quest(1, "Mystic Spring", target_fish="Catfish", amount=5),
+                    Quest(2, "Mystic Spring", rarity="Uncommon", amount=5),
+                ],
+            }
 
-    # ------------------------------------------------------------------
-    # Quest generation
-    # ------------------------------------------------------------------
-    def allowed_rarities(self):
-        level = self.game.level
-        rarities = ["Common", "Uncommon"]
-        if level >= 5:
-            rarities.append("Rare")
-        if level >= 10:
-            rarities.append("Epic")
-        if level >= 20:
-            rarities.append("Legendary")
-        if level >= 30:
-            rarities.append("Mythical")
-        if level >= 40:
-            rarities.append("Exotic")
-        return rarities
+    def to_dict(self) -> Dict[str, List[Dict]]:
+        return {zone: [q.to_dict() for q in quests] for zone, quests in self.zone_quests.items()}
 
-    def generate_quest(self):
-        quest_type = random.choice(["rarity", "quantity"])
-        if quest_type == "rarity":
-            return self.create_rarity_quest()
-        return self.create_quantity_quest()
+    def get_quests_for_zone(self, zone_name: str) -> List[Quest]:
+        return self.zone_quests.get(zone_name, [])
 
-    def create_rarity_quest(self):
-        zone = random.choice(self.game.get_unlocked_zones())
-        fish_list = self.game.get_fish_list_for_zone(zone)
-        rarities = list({f["rarity"] for f in fish_list})
-        rarities = [r for r in rarities if r in self.allowed_rarities()]
-        if not rarities:
-            rarities = ["Common"]
-        rarity = random.choice(rarities)
-        amount = random.randint(1, 5)
-        reward = RARITY_REWARD.get(rarity, 100) * amount
-        fish_names = [f["name"] for f in fish_list if f["rarity"] == rarity]
-        requirement = f"Catch {amount} {rarity} fish in {zone} Zone"
-        return {
-            "type": "rarity",
-            "requirement": requirement,
-            "zone": zone,
-            "fish": fish_names,
-            "rarity": rarity,
-            "target": amount,
-            "reward": reward,
-        }
-
-    def create_quantity_quest(self):
-        zone = random.choice(self.game.get_unlocked_zones())
-        fish_list = self.game.get_fish_list_for_zone(zone)
-        fish = random.choice(fish_list)
-        amount = random.randint(1, 10)
-        reward = RARITY_REWARD.get(fish["rarity"], 100) * amount
-        requirement = f"Catch {amount} {fish['name']} in {zone} Zone"
-        return {
-            "type": "quantity",
-            "requirement": requirement,
-            "zone": zone,
-            "fish": [fish["name"]],
-            "rarity": fish["rarity"],
-            "target": amount,
-            "reward": reward,
-        }
-
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
-    def get_progress(self, quest):
-        if quest["type"] == "rarity":
-            return sum(
-                1
-                for f in self.game.inventory
-                if f.get("zone") == quest["zone"] and f["rarity"] == quest["rarity"]
-            )
-        return sum(
-            1
-            for f in self.game.inventory
-            if f.get("zone") == quest["zone"] and f["name"] in quest["fish"]
-        )
-
-    def show_active_quests(self):
-        for idx, quest in enumerate(self.active_quests, 1):
-            progress = self.get_progress(quest)
-            status = "Finished" if progress >= quest["target"] else "Didn't Finish"
-            print(f"{idx}. {quest['requirement']} ({status})")
-
-    def show_quest_detail(self, idx):
-        quest = self.active_quests[idx - 1]
-        while True:
-            clear_screen()
-            progress = self.get_progress(quest)
-            status = "Finished" if progress >= quest["target"] else "Didn't Finish"
-            print(f"---Quest{idx:02}---")
-            print(f"1. To do: {quest['requirement']}")
-            print(f"2. Zone: {quest['zone']}")
-            print(f"3. Fish: {', '.join(quest['fish'])}")
-            print(f"4. Rarity: {quest['rarity']}")
-            print(f"5. Money: {quest['reward']}$")
-            print(f"Progress: {progress}/{quest['target']}")
-            print("6. Finish")
-            choice = input("(Choose 6 if you finish, 0 to return): ")
-            if choice == "6":
-                self.finish_quest(idx)
-                break
-            if choice == "0":
-                break
-
-    def finish_quest(self, quest_idx):
-        quest = self.active_quests[quest_idx - 1]
-        progress = self.get_progress(quest)
-        if progress < quest["target"]:
-            print("You haven't met the requirement yet.")
-            input("Press Enter to continue...")
+    def show_quests_for_zone(self, zone_name: str):
+        quests = self.get_quests_for_zone(zone_name)
+        if not quests:
+            print("No quests available here.")
             return
-        removed = 0
-        for fish in self.game.inventory[:]:
-            if quest["type"] == "rarity":
-                if fish.get("zone") == quest["zone"] and fish["rarity"] == quest["rarity"]:
-                    self.game.inventory.remove(fish)
-                    removed += 1
+        print("Available quests:")
+        for q in quests:
+            if q.quest_type == 1:
+                desc = f"Catch {q.amount} {q.target_fish}"
             else:
-                if fish.get("zone") == quest["zone"] and fish["name"] in quest["fish"]:
-                    self.game.inventory.remove(fish)
-                    removed += 1
-            if removed >= quest["target"]:
-                break
-        self.game.balance += quest["reward"]
-        print(f"Quest completed! You earned {quest['reward']}$")
-        self.active_quests[quest_idx - 1] = self.generate_quest()
-        self.game.save_game()
-        input("Press Enter to continue...")
+                desc = f"Catch {q.amount} {q.rarity} fish"
+            status = f"{q.progress}/{q.amount}"
+            print(f"- {desc} ({status})")
 
-    def manage_quests(self):
-        while True:
-            clear_screen()
-            print("_____QUEST_____")
-            self.show_active_quests()
-            choice = input("Pick a quest (1-20) or press 0 to return to menu: ")
-            if choice == "0":
-                break
-            if choice.isdigit() and 1 <= int(choice) <= len(self.active_quests):
-                self.show_quest_detail(int(choice))
+    def show_all_quests(self):
+        for zone, quests in self.zone_quests.items():
+            print(f"== {zone} ==")
+            for q in quests:
+                if q.quest_type == 1:
+                    desc = f"Catch {q.amount} {q.target_fish}"
+                else:
+                    desc = f"Catch {q.amount} {q.rarity} fish"
+                print(f"{desc} - {q.progress}/{q.amount}")
+
+    def update_quest_progress(self, player_zone: str, fish_name: str, rarity: str):
+        for q in self.get_quests_for_zone(player_zone):
+            if q.quest_type == 1 and q.target_fish == fish_name and q.progress < q.amount:
+                q.progress += 1
+                print(f"Quest update: {q.target_fish} {q.progress}/{q.amount}")
+            elif q.quest_type == 2 and q.rarity == rarity and q.progress < q.amount:
+                q.progress += 1
+                print(f"Quest update: {q.rarity} fish {q.progress}/{q.amount}")
 
 
 # --------------------------- Game Class ---------------------------
@@ -399,10 +307,10 @@ class Game:
         self.current_fish_list = FISH_LAKE
         self.current_zone_catch_length = 5
         self.current_fish = None
-        self.loaded_quests: List[Dict] = []
+        self.loaded_quests: Dict[str, List[Dict]] = {}
         # load existing data if any
         self.load_game()
-        self.quest_system = QuestSystem(self, self.loaded_quests)
+        self.quest_manager = QuestManager(self.loaded_quests)
 
     # -------------- Save & Load --------------
     def save_game(self):
@@ -420,8 +328,8 @@ class Game:
               'event': self.event,
               'level': self.level,
               'xp': self.xp,
-              'discovery': self.discovery,
-            'quests': self.quest_system.active_quests,
+            'discovery': self.discovery,
+            'quests': self.quest_manager.to_dict(),
         }
         data_to_hash = data.copy()
         serialized = json.dumps(data_to_hash, sort_keys=True)
@@ -453,10 +361,10 @@ class Game:
             self.level = data.get('level', 0)
             self.xp = data.get('xp', 0)
             self.discovery = data.get('discovery', {})
-            self.loaded_quests = data.get('quests', [])
+            self.loaded_quests = data.get('quests', {})
         else:
             # defaults already set
-            self.loaded_quests = []
+            self.loaded_quests = {}
 
     # -------------- Level & XP --------------
     def calculate_xp_for_level(self, level: int) -> int:
@@ -718,6 +626,8 @@ class Game:
             self.current_fish_list = FISH_LAKE
             self.current_zone_catch_length = 5
             time.sleep(2)
+        self.quest_manager.show_quests_for_zone(self.current_zone)
+        time.sleep(2)
 
     # -------------- Time & Events --------------
     def get_time_of_day(self) -> str:
@@ -896,6 +806,7 @@ class Game:
         print("\n" + color_text(f">> You caught a {fish['name']} [{fish['rarity']}] - {weight} kg.", color))
         value = round(weight * fish['price'], 2)
         self.update_discovery(self.current_zone, fish['name'], weight, value)
+        self.quest_manager.update_quest_progress(self.current_zone, fish['name'], fish['rarity'])
         self.save_game()
         input("Press Enter to continue...")
 
@@ -1068,7 +979,10 @@ class Game:
             elif choice == '6':
                 self.show_discovery_book()
             elif choice == '7':
-                self.quest_system.manage_quests()
+                clear_screen()
+                print("_____QUEST_____")
+                self.quest_manager.show_all_quests()
+                input("Press Enter to continue...")
             elif choice == '8':
                 break
             elif choice == 'admin':

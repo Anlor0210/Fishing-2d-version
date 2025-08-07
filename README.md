@@ -5,7 +5,7 @@ Simple console fishing game in Python.
 ## Features
 
 - Multiple fishing zones with different fish types
-- Dynamic quest system that keeps up to 20 quests active
+- Zone-specific quest system with fish and rarity objectives
 - Shop and inventory management
 - Day/night cycle with seasons affecting fish availability
 
