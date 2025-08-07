@@ -10,6 +10,10 @@ import sys
 import select
 import hashlib
 from typing import Dict, List
+try:
+    import curses
+except Exception:  # pragma: no cover - curses may be missing on some platforms
+    curses = None
 
 if sys.platform == 'win32':
     import msvcrt
@@ -820,6 +824,7 @@ class Game:
         target_start = random.randint(5, len(bar) - zone_length - 1)
         target_end = target_start + zone_length - 1
         with RawInput():
+            prev_i = -1
             for i in range(len(bar)):
                 clear_screen()
                 before = bar[:i]
@@ -832,8 +837,18 @@ class Game:
                 time.sleep(speed)
                 if key_pressed():
                     ch = read_key()
-                    if ch in ENTER_KEYS or ch == ' ':
-                        if target_start <= i <= target_end:
+                    if isinstance(ch, str):
+                        is_enter = ch in ENTER_KEYS or ch == ' '
+                    else:
+                        codes = {10, 13, ord(' ')}
+                        if curses:
+                            codes.add(curses.KEY_ENTER)
+                        is_enter = ch in codes
+                    if is_enter:
+                        in_zone = (target_start <= i <= target_end) or (
+                            prev_i >= 0 and target_start <= prev_i <= target_end
+                        )
+                        if in_zone:
                             if random.randint(1, 100) <= 20:
                                 print("\n>> Oh no! The fish run!")
                                 return False
@@ -842,6 +857,7 @@ class Game:
                         else:
                             print("\n>> Missed! The fish got away...")
                             return False
+                prev_i = i
             print("\n>> Time's up! The fish escaped!")
         return False
 
