@@ -189,6 +189,42 @@ FISH_MYSTIC_SPRING = [
     {"name": "Glimmering Angelfish", "rarity": "Epic", "price": 60, "xp": 80},
 ]
 
+# Boss definitions for each zone
+ZONE_BOSS_MAP = {
+    "Lake": {
+        "name": "The Drowned King",
+        "warning": "🧱 The water trembles... The Drowned King is near!",
+    },
+    "Sea": {
+        "name": "Kraken",
+        "warning": "🌊 Tentacles rise! The Kraken is attacking!",
+    },
+    "Bathyal": {
+        "name": "Ancient Leviathan",
+        "warning": "🐉 A massive shadow looms... Leviathan emerges!",
+    },
+    "Mystic Spring": {
+        "name": "Mystic Dragonfish",
+        "warning": "✨ The water glows... A Mystic Dragonfish reveals itself!",
+    },
+    "Abyss Trench": {
+        "name": "Abyss King",
+        "warning": "🌑 Darkness thickens... The Abyss King awakens!",
+    },
+    "Ancient Sea": {
+        "name": "Godfish Eternus",
+        "warning": "🕯 Time stands still... Godfish Eternus appears!",
+    },
+}
+
+# Inject boss fish into zone fish lists
+FISH_LAKE.append({"name": ZONE_BOSS_MAP["Lake"]["name"], "rarity": "???", "price": 1000, "xp": 6000})
+FISH_SEA.append({"name": ZONE_BOSS_MAP["Sea"]["name"], "rarity": "???", "base_price": 1000, "xp": 7000})
+FISH_BATHYAL.append({"name": ZONE_BOSS_MAP["Bathyal"]["name"], "rarity": "???", "base_price": 1000, "xp": 8000})
+FISH_MYSTIC_SPRING.append({"name": ZONE_BOSS_MAP["Mystic Spring"]["name"], "rarity": "???", "price": 1000, "xp": 9000})
+FISH_ABYSS_TRENCH.append({"name": ZONE_BOSS_MAP["Abyss Trench"]["name"], "rarity": "???", "price": 1000, "xp": 9500})
+FISH_ANCIENT_SEA.append({"name": ZONE_BOSS_MAP["Ancient Sea"]["name"], "rarity": "???", "price": 1000, "xp": 10000})
+
 # Map zones to their fish lists for easy lookup throughout the game
 ZONE_FISH_MAP = {
     "Lake": FISH_LAKE,
@@ -287,7 +323,7 @@ class QuestManager:
         return self.zone_quests.get(zone_name, [])
 
     def generate_quest(self, zone: str) -> Quest:
-        fish_list = ZONE_FISH_MAP.get(zone, [])
+        fish_list = [f for f in ZONE_FISH_MAP.get(zone, []) if f.get("rarity") != "???"]
         if not fish_list:
             return Quest(1, zone, target_fish="Carp", amount=1, reward=10)
         quest_type = random.choice([1, 2])
@@ -463,6 +499,7 @@ class Game:
             "Legendary": "Yellow",
             "Mythical": "DarkYellow",
             "Exotic": "Red",
+            "???": "Red",
         }
         return mapping.get(rarity, "White")
 
@@ -524,12 +561,87 @@ class Game:
         zone_data[fish_name] = entry
         self.discovery[zone] = zone_data
 
+    # -------------- Boss minigame --------------
+    def run_boss_minigame_rounds(self, rounds: int = 5, zone_len: int = 3, speed: float = 0.02) -> bool:
+        bar = "--------------------------"
+        for _ in range(rounds):
+            target_start = random.randint(5, len(bar) - zone_len - 1)
+            target_end = target_start + zone_len - 1
+            with RawInput():
+                prev_i = -1
+                for i in range(len(bar)):
+                    clear_screen()
+                    before = bar[:i]
+                    after = bar[i + 1:]
+                    line = before + "|" + after
+                    target_line = ''.join('=' if target_start <= j <= target_end else ' ' for j in range(len(bar)))
+                    print("Boss battle!")
+                    print(line)
+                    print(target_line)
+                    time.sleep(speed)
+                    if key_pressed():
+                        ch = read_key()
+                        if isinstance(ch, str):
+                            is_enter = ch in ENTER_KEYS or ch == ' '
+                        else:
+                            codes = {10, 13, ord(' ')}
+                            if curses:
+                                codes.add(curses.KEY_ENTER)
+                            is_enter = ch in codes
+                        if is_enter:
+                            in_zone = (target_start <= i <= target_end) or (
+                                prev_i >= 0 and target_start <= prev_i <= target_end
+                            )
+                            if in_zone:
+                                break
+                            else:
+                                print("\n>> Missed! The boss slips away! <<")
+                                return False
+                    prev_i = i
+                else:
+                    print("\n>> Time's up! The boss escaped! <<")
+                    return False
+        return True
+
     # -------------- Fish generation --------------
-    def get_fish_by_weighted_random(self, fish_list: List[Dict]) -> Dict:
+    def get_fish_by_weighted_random(self, fish_list: List[Dict]) -> Dict | None:
+        # Chance to encounter zone boss
+        if random.random() < 0.01 and self.current_zone in ZONE_BOSS_MAP:
+            boss = ZONE_BOSS_MAP[self.current_zone]
+            print(boss["warning"])
+            success = self.run_boss_minigame_rounds()
+            if success:
+                weight = random.randint(1000, 10000)
+                boss_entry = next((f for f in fish_list if f["name"] == boss["name"]), {})
+                boss_xp = boss_entry.get("xp", 0)
+                caught = {
+                    "name": boss["name"],
+                    "rarity": "???",
+                    "price": 1000,
+                    "weight": weight,
+                    "zone": self.current_zone,
+                }
+                self.current_fish = caught.copy()
+                self.inventory.append(self.current_fish.copy())
+                self.xp += boss_xp
+                self.check_level_up()
+                color = self.get_rarity_color("???")
+                print("\n" + color_text(f">> You caught {boss['name']} [???] - {weight} kg!", color))
+                value = round(weight * 1000, 2)
+                self.update_discovery(self.current_zone, boss["name"], weight, value)
+                self.quest_manager.update_quest_progress(self.current_zone, boss["name"], "???")
+                self.save_game()
+                input("Press Enter to continue...")
+            else:
+                print("\n>> The boss escaped! <<")
+                input("Press Enter to continue...")
+            return None
         time_of_day = self.get_time_of_day()
         season = self.get_current_season()
         filtered: List[Dict] = []
         for fish in fish_list:
+            if fish.get('rarity') == '???':
+                continue
             allowed_times = fish.get('time_of_day')
             allowed_seasons = fish.get('seasons')
             if allowed_times and time_of_day not in allowed_times:
@@ -886,7 +998,10 @@ class Game:
             fish['weight'] = random.randint(1000, 100000)
             price = fish['price']
         else:
-            fish = self.get_fish_by_weighted_random(self.current_fish_list).copy()
+            fish = self.get_fish_by_weighted_random(self.current_fish_list)
+            if fish is None:
+                return
+            fish = fish.copy()
             weight = self.generate_weight(fish['name'], fish['rarity'])
             fish['weight'] = round(weight, 1)
             if self.current_zone == "Sea":
