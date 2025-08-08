@@ -338,6 +338,14 @@ class QuestManager:
         else:
             rarity = random.choice(list({f["rarity"] for f in fish_list}))
             target_fish = None
+
+        max_amount = 15
+        if rarity == "Legendary":
+            max_amount = 5
+        elif rarity == "Boss":
+            max_amount = 1
+        amount = min(amount, max_amount)
+
         base_values = {
             "Common": 10,
             "Uncommon": 20,
