@@ -323,7 +323,10 @@ class QuestManager:
         return self.zone_quests.get(zone_name, [])
 
     def generate_quest(self, zone: str) -> Quest:
-        fish_list = [f for f in ZONE_FISH_MAP.get(zone, []) if f.get("rarity") != "???"]
+        fish_list = [
+            f for f in ZONE_FISH_MAP.get(zone, [])
+            if f.get("rarity") not in ("???", "Exotic")
+        ]
         if not fish_list:
             return Quest(1, zone, target_fish="Carp", amount=1, reward=10)
         quest_type = random.choice([1, 2])
@@ -335,9 +338,24 @@ class QuestManager:
         else:
             rarity = random.choice(list({f["rarity"] for f in fish_list}))
             target_fish = None
-        base = RARITY_BASE_REWARD.get(rarity, 10)
-        reward = base * amount
-        return Quest(quest_type, zone, target_fish=target_fish, rarity=rarity, amount=amount, reward=reward)
+        base_values = {
+            "Common": 10,
+            "Uncommon": 20,
+            "Rare": 100,
+            "Epic": 175,
+            "Mythical": 200,
+            "Legendary": 500,
+            "Boss": 10000,
+        }
+        reward = base_values.get(rarity, 0) * amount
+        return Quest(
+            quest_type,
+            zone,
+            target_fish=target_fish,
+            rarity=rarity,
+            amount=amount,
+            reward=reward,
+        )
 
     def finish_quest(self, zone: str, quest_index: int) -> int:
         quests = self.get_quests_for_zone(zone)
