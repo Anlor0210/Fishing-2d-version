@@ -398,6 +398,7 @@ class Game:
         self.has_abyss_trench_access = False
         self.has_ancient_sea_access = False
         self.has_ancient_key = False
+        self.has_floating_key = False
         self.current_hour = 0
         self.current_day = 0
         self.event = "Nothing"
@@ -424,6 +425,7 @@ class Game:
             'hasAbyssTrenchAccess': self.has_abyss_trench_access,
               'hasAncientSeaAccess': self.has_ancient_sea_access,
               'hasAncientKey': self.has_ancient_key,
+              'hasFloatingKey': self.has_floating_key,
               'currentHour': self.current_hour,
               'currentDay': self.current_day,
               'event': self.event,
@@ -456,6 +458,7 @@ class Game:
             self.has_abyss_trench_access = data.get('hasAbyssTrenchAccess', False)
             self.has_ancient_sea_access = data.get('hasAncientSeaAccess', False)
             self.has_ancient_key = data.get('hasAncientKey', False)
+            self.has_floating_key = data.get('hasFloatingKey', False)
             self.current_hour = data.get('currentHour', 0)
             self.current_day = data.get('currentDay', 0)
             self.event = data.get('event', 'Nothing')
@@ -1023,14 +1026,18 @@ class Game:
         self.inventory.append(self.current_fish.copy())
         self.xp += self.get_xp_by_rarity(fish['rarity'])
         self.check_level_up()
-        if fish['name'] == 'Ancient Key':
-            self.has_ancient_key = True
-            print(">> You obtained the Ancient Key!")
         color = 'Red' if fish['rarity'] == 'Exotic' else self.get_rarity_color(fish['rarity'])
         print("\n" + color_text(f">> You caught a {fish['name']} [{fish['rarity']}] - {weight} kg.", color))
         value = round(weight * fish['price'], 2)
         self.update_discovery(self.current_zone, fish['name'], weight, value)
         self.quest_manager.update_quest_progress(self.current_zone, fish['name'], fish['rarity'])
+        if fish['name'] == 'Ancient Key' and not self.has_ancient_key:
+            self.has_ancient_key = True
+            print(">> You obtained the Ancient Key!")
+        if self.current_zone == "Sea" and not self.has_floating_key and random.random() < 0.01:
+            self.has_floating_key = True
+            print("🔑 You found a mysterious FLOATING KEY hidden inside the fish!")
+            print("☁️ Now you can access the Floating Island when it appears!")
         self.save_game()
         input("Press Enter to continue...")
 
