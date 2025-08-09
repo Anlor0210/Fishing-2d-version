@@ -1006,7 +1006,7 @@ class Game:
             print("Invalid amount.")
             input("Press Enter to return to menu")
             return
-        cost = (amount - 1) * 10
+        cost = (amount - 1) * 15
         if self.balance < cost:
             print("❌ Not enough money for fast fishing!")
             input("Press Enter to return to menu")
@@ -1018,7 +1018,10 @@ class Game:
         ]
         caught = []
         total_xp = 0
-        for _ in range(amount):
+        for i in range(amount):
+            if i > 0 and random.random() < 0.3:
+                print("Autofish failed! The fish escaped.")
+                continue
             time_of_day = self.get_time_of_day()
             season = self.get_current_season()
             filtered = []
@@ -1084,7 +1087,6 @@ class Game:
             value = round(fish['weight'] * fish['price'], 2)
             self.update_discovery(self.current_zone, fish['name'], fish['weight'], value)
             self.quest_manager.update_quest_progress(self.current_zone, fish['name'], fish['rarity'])
-            self.streak += 1
             caught.append(entry)
         self.save_game()
         print("\nFast fishing results:")
@@ -1106,9 +1108,11 @@ class Game:
             speed = self.get_speed()
         target_start = random.randint(5, len(bar) - zone_length - 1)
         target_end = target_start + zone_length - 1
+        extended_start = max(0, target_start - 1)
+        extended_end = min(len(bar) - 1, target_end + 1)
         with RawInput():
-            prev_i = -1
-            for i in range(len(bar)):
+            i = 0
+            while i < len(bar):
                 clear_screen()
                 before = bar[:i]
                 after = bar[i+1:]
@@ -1117,21 +1121,23 @@ class Game:
                 print("Catch zone:")
                 print(line)
                 print(target_line)
-                time.sleep(speed)
-                if key_pressed():
-                    ch = read_key()
-                    if ch == ' ':
-                        in_zone = (target_start <= i <= target_end) or (
-                            prev_i >= 0 and target_start <= prev_i <= target_end
-                        )
-                        if in_zone:
-                            if random.randint(1, 100) <= 20:
-                                print("\n>> Oh no! The fish run!")
-                                return False
-                            print("\n>> Success! You caught a fish!")
-                            return True
-                        # space pressed outside zone is ignored
-                prev_i = i
+                start_time = time.time()
+                while True:
+                    if key_pressed():
+                        ch = read_key()
+                        if ch == ' ':
+                            pos = i
+                            if extended_start <= pos <= extended_end:
+                                if random.randint(1, 100) <= 20:
+                                    print("\n>> Oh no! The fish run!")
+                                    return False
+                                print("\n>> Success! You caught a fish!")
+                                return True
+                        break
+                    if time.time() - start_time >= speed:
+                        break
+                    time.sleep(0.001)
+                i += 1
             print("\n>> Time's up! The fish escaped!")
         return False
 
