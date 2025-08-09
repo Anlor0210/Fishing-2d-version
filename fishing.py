@@ -73,7 +73,11 @@ def key_pressed():
 
 def read_key():
     if sys.platform == 'win32':
-        return msvcrt.getch().decode('utf-8')
+        ch = msvcrt.getwch()
+        if ch in ('\x00', '\xe0'):
+            msvcrt.getwch()
+            return ''
+        return ch
     return sys.stdin.read(1)
 
 ENTER_KEYS = ('\r', '\n', '\r\n', '\x0d')
@@ -430,6 +434,7 @@ class Game:
         self.event = "Nothing"
         self.level = 0
         self.xp = 0
+        self.streak = 0
         self.discovery: Dict[str, Dict] = {}
         self.current_zone = "Lake"
         self.current_fish_list = FISH_LAKE
@@ -459,6 +464,7 @@ class Game:
               'xp': self.xp,
             'discovery': self.discovery,
             'quests': self.quest_manager.to_dict(),
+            'streak': self.streak,
         }
         data_to_hash = data.copy()
         serialized = json.dumps(data_to_hash, sort_keys=True)
@@ -490,6 +496,7 @@ class Game:
             self.event = data.get('event', 'Nothing')
             self.level = data.get('level', 0)
             self.xp = data.get('xp', 0)
+            self.streak = data.get('streak', 0)
             self.discovery = data.get('discovery', {})
             self.loaded_quests = data.get('quests', {})
         else:
@@ -610,22 +617,12 @@ class Game:
                     time.sleep(speed)
                     if key_pressed():
                         ch = read_key()
-                        if isinstance(ch, str):
-                            is_enter = ch in ENTER_KEYS or ch == ' '
-                        else:
-                            codes = {10, 13, ord(' ')}
-                            if curses:
-                                codes.add(curses.KEY_ENTER)
-                            is_enter = ch in codes
-                        if is_enter:
+                        if ch == ' ':
                             in_zone = (target_start <= i <= target_end) or (
                                 prev_i >= 0 and target_start <= prev_i <= target_end
                             )
                             if in_zone:
                                 break
-                            else:
-                                print("\n>> Missed! The boss slips away! <<")
-                                return False
                     prev_i = i
                 else:
                     print("\n>> Time's up! The boss escaped! <<")
@@ -680,20 +677,37 @@ class Game:
             filtered.append(fish)
         if not filtered:
             filtered = fish_list
-        weighted = []
+        weights = {
+            'Common': 5,
+            'Uncommon': 3,
+            'Rare': 2,
+            'Epic': 1,
+            'Legendary': 1,
+            'Mythical': 1,
+            'Exotic': 0,
+        }
+        rare_types = {'Rare', 'Epic', 'Legendary', 'Mythical', 'Exotic'}
+        rare_weighted = []
+        common_weighted = []
         for fish in filtered:
             rarity = fish.get('rarity', 'Common')
-            weight = {
-                'Common': 5,
-                'Uncommon': 3,
-                'Rare': 2,
-                'Epic': 1,
-                'Legendary': 1,
-                'Mythical': 1,
-                'Exotic': 0,
-            }.get(rarity, 3)
-            weighted.extend([fish] * weight)
-        return random.choice(weighted)
+            weight = weights.get(rarity, 3)
+            if rarity in rare_types:
+                rare_weighted.extend([fish] * weight)
+            else:
+                common_weighted.extend([fish] * weight)
+        if not rare_weighted:
+            pool = common_weighted or filtered
+            return random.choice(pool)
+        total_weight = len(rare_weighted) + len(common_weighted)
+        base_chance = len(rare_weighted) / total_weight * 100
+        bonus = min(self.streak * 2, 20)
+        chance = min(base_chance + bonus, 100)
+        if random.randint(1, 100) <= chance:
+            pool = rare_weighted
+        else:
+            pool = common_weighted
+        return random.choice(pool)
 
     def generate_weight(self, name: str, rarity: str) -> float:
         if name == "Shark":
@@ -950,10 +964,11 @@ class Game:
         for line in frames:
             print(line)
             time.sleep(0.3)
+        print(f"Current streak: {self.streak}")
         is_exotic = False
         wait_seconds = 2
         while True:
-            print("\nWaiting for a bite...")
+            print(f"\nWaiting for a bite... (Streak: {self.streak})")
             time.sleep(wait_seconds)
             fish_bite = random.randint(1, 100) <= 60
             if fish_bite:
@@ -970,6 +985,11 @@ class Game:
                     success = self.start_minigame()
                 if success:
                     self.obtain_fish(full_moon_event=is_exotic)
+                else:
+                    if self.streak > 0:
+                        print("The fish run and you lost the streak")
+                    self.streak = 0
+                    input("Press Enter to continue...")
                 break
             else:
                 wait_seconds = min(wait_seconds + 1, 6)
@@ -1012,19 +1032,33 @@ class Game:
                 filtered.append(fish)
             if not filtered:
                 filtered = valid_fish
-            weighted = []
+            weights = {
+                'Common': 5,
+                'Uncommon': 3,
+                'Rare': 2,
+                'Epic': 1,
+                'Legendary': 1,
+                'Mythical': 1,
+            }
+            rare_types = {'Rare', 'Epic', 'Legendary', 'Mythical'}
+            rare_weighted = []
+            common_weighted = []
             for fish in filtered:
                 rarity = fish.get('rarity', 'Common')
-                weight = {
-                    'Common': 5,
-                    'Uncommon': 3,
-                    'Rare': 2,
-                    'Epic': 1,
-                    'Legendary': 1,
-                    'Mythical': 1,
-                }.get(rarity, 3)
-                weighted.extend([fish] * weight)
-            fish = random.choice(weighted).copy()
+                weight = weights.get(rarity, 3)
+                if rarity in rare_types:
+                    rare_weighted.extend([fish] * weight)
+                else:
+                    common_weighted.extend([fish] * weight)
+            if rare_weighted:
+                total_weight = len(rare_weighted) + len(common_weighted)
+                base_chance = len(rare_weighted) / total_weight * 100
+                bonus = min(self.streak * 2, 20)
+                chance = min(base_chance + bonus, 100)
+                pool = rare_weighted if random.randint(1, 100) <= chance else common_weighted
+            else:
+                pool = common_weighted or filtered
+            fish = random.choice(pool).copy()
             weight_val = self.generate_weight(fish['name'], fish['rarity'])
             fish['weight'] = round(weight_val, 1)
             if self.current_zone == "Sea":
@@ -1050,6 +1084,7 @@ class Game:
             value = round(fish['weight'] * fish['price'], 2)
             self.update_discovery(self.current_zone, fish['name'], fish['weight'], value)
             self.quest_manager.update_quest_progress(self.current_zone, fish['name'], fish['rarity'])
+            self.streak += 1
             caught.append(entry)
         self.save_game()
         print("\nFast fishing results:")
@@ -1058,6 +1093,7 @@ class Game:
             print(color_text(f"- {f['name']} [{f['rarity']}] - {f['weight']} kg", color))
         print(f"Total XP gained: {total_xp}")
         print(f"Money spent: {cost}$")
+        print(f"Current streak: {self.streak}")
         input("Press Enter to continue...")
 
     def start_minigame(self, full_moon_event=False) -> bool:
@@ -1084,14 +1120,7 @@ class Game:
                 time.sleep(speed)
                 if key_pressed():
                     ch = read_key()
-                    if isinstance(ch, str):
-                        is_enter = ch in ENTER_KEYS or ch == ' '
-                    else:
-                        codes = {10, 13, ord(' ')}
-                        if curses:
-                            codes.add(curses.KEY_ENTER)
-                        is_enter = ch in codes
-                    if is_enter:
+                    if ch == ' ':
                         in_zone = (target_start <= i <= target_end) or (
                             prev_i >= 0 and target_start <= prev_i <= target_end
                         )
@@ -1101,9 +1130,7 @@ class Game:
                                 return False
                             print("\n>> Success! You caught a fish!")
                             return True
-                        else:
-                            print("\n>> Missed! The fish got away...")
-                            return False
+                        # space pressed outside zone is ignored
                 prev_i = i
             print("\n>> Time's up! The fish escaped!")
         return False
@@ -1116,6 +1143,9 @@ class Game:
         else:
             fish = self.get_fish_by_weighted_random(self.current_fish_list)
             if fish is None:
+                if self.streak > 0:
+                    print("The fish run and you lost the streak")
+                self.streak = 0
                 return
             fish = fish.copy()
             weight = self.generate_weight(fish['name'], fish['rarity'])
@@ -1144,6 +1174,8 @@ class Game:
         value = round(weight * fish['price'], 2)
         self.update_discovery(self.current_zone, fish['name'], weight, value)
         self.quest_manager.update_quest_progress(self.current_zone, fish['name'], fish['rarity'])
+        self.streak += 1
+        print(f"Current streak: {self.streak}")
         if fish['name'] == 'Ancient Key' and not self.has_ancient_key:
             self.has_ancient_key = True
             print(">> You obtained the Ancient Key!")
