@@ -1,6 +1,6 @@
 🎣 Fishing Game Tutorial – Full Guide
 👋 1. Welcome
-Welcome to Fishing Game, a simple yet addictive console-based fishing simulator powered by PowerShell or Python!
+Welcome to Fishing Game, a simple yet addictive console-based fishing simulator powered by Python!
 
 If you don't have Python, download it here: https://www.python.org/downloads
 
@@ -19,97 +19,101 @@ The game will open in a PowerShell window (or CMD if preferred).
 
 🎮 3. How to Fish
 🎣 Step-by-step:
-From the Main Menu, select 1. Start Fishing
+
+From the Main Menu, select 1. Start Fishing (Normal Fishing) or 2. Fast Fishing.
 
 Wait until the pointer is inside the Catch Zone.
 
-Press Enter to catch the fish!
+Press Space to catch the fish! (Previously Enter; changed for better gameplay feel.)
 
 📌 Catch Zone
-The Catch Zone is shown with "===", like this:
+
+diff
+Copy
+Edit
 Catch zone:
 -----------|--------------
-         ===== --> this is Catch Zone
-         
-→ Try to hit Enter when the pointer (|) is inside the === zone.
+         ===
+→ Try to hit Space when the pointer (|) is inside the === zone.
 
-🐟 4. Fish Info
-Every time you catch a fish, you’ll see:
+🆕 New Gameplay Systems
+Streak System
+Catching fish in Normal Fishing increases your streak count.
 
-Name of the fish
+Higher streaks = higher rare fish and Boss spawn chance.
 
-Rarity: Common, Uncommon, Rare, etc.
+Missing a catch resets streak with the message:
+"The fish run and you lost the streak".
 
-Weight (kg)
+Fast Fishing does not affect streak, but XP is still earned normally.
 
-Sell value (💰)
+📊 Streak Spawn Rate Formula:
 
-🌍 5. Fishing Zones
-You can unlock and travel to many fishing zones, such as:
+Streak	Rare Fish Chance Boost	Boss Spawn Chance Boost
+0	+0%	+0%
+1–4	+5% each streak	+0.2% each streak
+5–9	+6% each streak	+0.25% each streak
+10+	+7% each streak	+0.3% each streak
+
+(These percentages are added on top of the base spawn rate of the zone)
+
+Boss Minigame
+Boss fish have a rare base spawn chance (1%), increased by streak bonus.
+
+Special fight with Stage 1 & Stage 3 mini-games only.
+
+Fast Fishing Updates
+Now has a 30% chance to miss automatically.
+
+Price per extra fish is 15$.
+
+No streak bonus, but XP is still given for all catches.
+
+🌍 4. Fishing Zones
+Unlock and travel to many fishing zones, such as:
 
 Lake, Mystic Spring, Deep Sea, Frozen Bay, Abyss Trench...
 
-Each zone has its unique fish species and quests!
+Each zone has its own fish species and quest sets.
 
-📘 6. Quest System (Menu 7)
-📋 Types of Quests
-Each zone has 10 unique quests, auto-generated and refilled.
+📘 5. Quest System (Menu 7)
+Each zone has 10 unique quests, auto-generated.
 
-There are two types:
+Two quest types:
 
-Catch a specific fish
+Catch specific fish (e.g., "Catch 5 Snakefish")
 
-e.g., "Catch 5 Snakefish"
+Catch by rarity (e.g., "Catch 3 Uncommon fish")
 
-Catch fish by rarity.
+Quest Example:
 
-e.g., "Catch 3 Uncommon fish"
-
-🧭 Quest Overview Example:
 markdown
 Copy
 Edit
 ___ Quests (Zone: Lake) ___
 1. Catch 5 Snakefish         Status: In Progress (2/5)
 2. Catch 3 Uncommon Fish     Status: Completed (3/3)
-...
-🔍 Quest Details (Press 1–10 to view):
-markdown
-Copy
-Edit
-___ Quest 01 ___
-1. Requirement:
-   - Catch 5 Snakefish
-2. Reward:
-   - Gain money: 500$
-3. Progress:
-   - 5 / 5
+Completing quests gives coins and XP, and a new quest replaces the old one instantly.
 
-(Choose option)
-[2] Finish Quest
-[0] Back to Quest Menu
-💡 Completing a quest will reward coins and replace it with a new one immediately.
+🎒 6. Inventory (Menu 4)
+View caught fish, rarity, and weight.
 
-🎒 7. Inventory (Menu 4)
-Check the fish you've caught, their rarity, and weight.
-Use the Sell command to sell:
+Sell individual fish or all at once.
 
-A specific fish (e.g., the Snakefish)
+🛒 7. Shop (Menu 5)
+Spend coins to:
 
-Or all fish (sell all)
+Unlock new zones.
 
-🛒 8. Shop (Menu 5)
-Spend money on:
+Buy better gear and upgrades.
 
-Unlock new zones
+📔 8. Discovery Log (Menu 6)
+Track every fish species you’ve caught.
 
-Buy equipment or upgrades.
+Each zone keeps a separate record.
 
-📔 9. Discovery Log (Menu 6)
-Track all the fish species you've ever caught. Each zone maintains its record.
-
-💾 10. Auto-Save
-Game auto-saves after:
+💾 9. Auto-Save
+The game auto-saves after:
 
 Catching fish
 
@@ -117,12 +121,10 @@ Completing quests
 
 Buying items
 
-You can safely exit and return at any time!
-
-🙏 11. Thank You!
+🙏 10. Thank You!
 Thanks for playing the Fishing Game!
-Stay relaxed, chase rare fish, and have fun with our evolving quest system.
+Stay relaxed, chase rare fish, and enjoy our evolving quest & streak system.
 
-If you enjoy the game, feel free to share it with your friends!
-**Contact: An1002@gmail.com**
-The game will be updated every week!
+If you enjoy the game, share it with friends!
+Contact: An1002@gmail.com
+The game is updated weekly!
