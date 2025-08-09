@@ -635,7 +635,7 @@ class Game:
     # -------------- Fish generation --------------
     def get_fish_by_weighted_random(self, fish_list: List[Dict]) -> Dict | None:
         # Chance to encounter zone boss
-        if random.random() < 0.01 and self.current_zone in ZONE_BOSS_MAP:
+        if random.random() < 0.10 and self.current_zone in ZONE_BOSS_MAP:
             boss = ZONE_BOSS_MAP[self.current_zone]
             print(boss["warning"])
             success = self.run_boss_minigame_rounds()
@@ -923,13 +923,14 @@ class Game:
         print(f"Event: {self.event}")
         print("Version: Beta")
         print("1. Fishing")
-        print("2. Zone")
-        print("3. Sell fish")
-        print("4. Inventory")
-        print("5. Shop")
-        print("6. Discovery Book")
-        print("7. Quest")
-        print("8. Exit game")
+        print("2. Fast Fishing (Catch multiple fish at once)")
+        print("3. Zone")
+        print("4. Sell fish")
+        print("5. Inventory")
+        print("6. Shop")
+        print("7. Discovery Book")
+        print("8. Quest")
+        print("9. Exit game")
 
     # -------------- Fishing --------------
     def start_fishing(self):
@@ -972,6 +973,92 @@ class Game:
                 break
             else:
                 wait_seconds = min(wait_seconds + 1, 6)
+
+    def fast_fishing(self):
+        clear_screen()
+        amount_str = input("How many fish do you want to catch? (1-10): ")
+        if not amount_str.isdigit():
+            print("Invalid amount.")
+            input("Press Enter to return to menu")
+            return
+        amount = int(amount_str)
+        if amount < 1 or amount > 10:
+            print("Invalid amount.")
+            input("Press Enter to return to menu")
+            return
+        cost = (amount - 1) * 10
+        if self.balance < cost:
+            print("❌ Not enough money for fast fishing!")
+            input("Press Enter to return to menu")
+            return
+        self.balance -= cost
+        valid_fish = [
+            f for f in self.current_fish_list
+            if f.get('rarity') in ["Common", "Uncommon", "Rare", "Epic", "Mythical", "Legendary"]
+        ]
+        caught = []
+        total_xp = 0
+        for _ in range(amount):
+            time_of_day = self.get_time_of_day()
+            season = self.get_current_season()
+            filtered = []
+            for fish in valid_fish:
+                allowed_times = fish.get('time_of_day')
+                allowed_seasons = fish.get('seasons')
+                if allowed_times and time_of_day not in allowed_times:
+                    continue
+                if allowed_seasons and season not in allowed_seasons:
+                    continue
+                filtered.append(fish)
+            if not filtered:
+                filtered = valid_fish
+            weighted = []
+            for fish in filtered:
+                rarity = fish.get('rarity', 'Common')
+                weight = {
+                    'Common': 5,
+                    'Uncommon': 3,
+                    'Rare': 2,
+                    'Epic': 1,
+                    'Legendary': 1,
+                    'Mythical': 1,
+                }.get(rarity, 3)
+                weighted.extend([fish] * weight)
+            fish = random.choice(weighted).copy()
+            weight_val = self.generate_weight(fish['name'], fish['rarity'])
+            fish['weight'] = round(weight_val, 1)
+            if self.current_zone == "Sea":
+                price_multiplier = SEA_PRICE_MULTIPLIER.get(fish['rarity'], 1)
+                price = round(fish.get('base_price', fish.get('price', 0)) * price_multiplier, 2)
+            elif self.current_zone == "Bathyal":
+                price = fish['base_price']
+            else:
+                price = fish['price']
+            fish['price'] = price
+            entry = {
+                'name': fish['name'],
+                'rarity': fish['rarity'],
+                'price': fish['price'],
+                'weight': fish['weight'],
+                'zone': self.current_zone,
+            }
+            self.inventory.append(entry.copy())
+            xp_gain = self.get_xp_by_rarity(fish['rarity'])
+            self.xp += xp_gain
+            total_xp += xp_gain
+            self.check_level_up()
+            value = round(fish['weight'] * fish['price'], 2)
+            self.update_discovery(self.current_zone, fish['name'], fish['weight'], value)
+            self.quest_manager.update_quest_progress(self.current_zone, fish['name'], fish['rarity'])
+            caught.append(entry)
+        self.save_game()
+        print("\nFast fishing results:")
+        for f in caught:
+            color = self.get_rarity_color(f['rarity'])
+            print(color_text(f"- {f['name']} [{f['rarity']}] - {f['weight']} kg", color))
+        print(f"Total XP gained: {total_xp}")
+        print(f"Money spent: {cost}$")
+        input("Press Enter to continue...")
 
     def start_minigame(self, full_moon_event=False) -> bool:
         bar = "--------------------------"  # length 26
@@ -1221,23 +1308,26 @@ class Game:
     def run(self):
         while True:
             self.show_menu()
-            choice = input("Pick your choice (1/2/3/4/5/6/7): ")
+            choice = input("Pick your choice (1-9): ")
             if choice == '1':
                 self.start_fishing()
                 self.advance_time()
             elif choice == '2':
-                self.choose_zone()
+                self.fast_fishing()
+                self.advance_time()
             elif choice == '3':
-                self.sell_fish()
+                self.choose_zone()
             elif choice == '4':
-                self.show_inventory()
+                self.sell_fish()
             elif choice == '5':
-                self.show_shop()
+                self.show_inventory()
             elif choice == '6':
-                self.show_discovery_book()
+                self.show_shop()
             elif choice == '7':
-                self.show_quest_menu()
+                self.show_discovery_book()
             elif choice == '8':
+                self.show_quest_menu()
+            elif choice == '9':
                 break
             elif choice == 'admin':
                 self.balance += 10000000
