@@ -82,6 +82,11 @@ def read_key():
 
 ENTER_KEYS = ('\r', '\n', '\r\n', '\x0d')
 
+# Boss spawn chance configuration
+BASE_BOSS_CHANCE = 0.10  # existing base chance (10%)
+BOSS_BONUS_PER_STREAK = 0.005  # additional 0.5% per streak
+BOSS_CHANCE_CAP = 0.20  # maximum 20% chance
+
 # --------------------------- Fish data ---------------------------
 
 FISH_LAKE = [
@@ -630,9 +635,18 @@ class Game:
         return True
 
     # -------------- Fish generation --------------
-    def get_fish_by_weighted_random(self, fish_list: List[Dict]) -> Dict | None:
+    def get_fish_by_weighted_random(self, fish_list: List[Dict], fast_mode: bool = False) -> Dict | None:
         # Chance to encounter zone boss
-        if random.random() < 0.10 and self.current_zone in ZONE_BOSS_MAP:
+        boss_chance = BASE_BOSS_CHANCE
+        if not fast_mode:
+            boss_chance = min(
+                BASE_BOSS_CHANCE + (self.streak * BOSS_BONUS_PER_STREAK),
+                BOSS_CHANCE_CAP,
+            )
+            bonus = boss_chance - BASE_BOSS_CHANCE
+            if bonus > 0:
+                print(f"Boss spawn chance boosted by streak: +{bonus*100:.1f}%")
+        if random.random() < boss_chance and self.current_zone in ZONE_BOSS_MAP:
             boss = ZONE_BOSS_MAP[self.current_zone]
             print(boss["warning"])
             success = self.run_boss_minigame_rounds()
